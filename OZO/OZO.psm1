@@ -1,3 +1,18 @@
+Function Get-OZO64BitPowerShell {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Returns True if the PowerShell environment is 64-bit and False if not.
+        .EXAMPLE
+        Get-OZO64BitPowerShell
+        True
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#get-ozo64bitpowershell
+    #>
+    return [Environment]::Is64BitProcess
+}
+
 Function Get-OZOHostname {
     <#
         .SYNOPSIS
@@ -54,4 +69,4 @@ Function Get-OZONumberIsOdd {
     return [Boolean]($Number%2)
 }
 
-Export-ModuleMember -Function Get-OZOHostname,Get-OZONumberIsOdd
+Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZOHostname,Get-OZONumberIsOdd
