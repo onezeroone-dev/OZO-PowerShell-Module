@@ -1,12 +1,3 @@
-Function Get-OZOBase64FromFile {
-    param(
-        [Parameter(Mandatory=$true,HelpMessage="The path to test",ValueFromPipeline=$true)][String]$Path
-    )
-    If ((Test-OZOPath -Path $Path) -eq $true) {
-        return [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($Path))
-    }
-}
-
 Function Get-OZO64BitPowerShell {
     <#
         .SYNOPSIS
@@ -20,6 +11,15 @@ Function Get-OZO64BitPowerShell {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#get-ozo64bitpowershell
     #>
     return [Environment]::Is64BitProcess
+}
+
+Function Get-OZOFileToBase64 {
+    param(
+        [Parameter(Mandatory=$true,HelpMessage="The path to test",ValueFromPipeline=$true)][String]$Path
+    )
+    If ((Test-OZOPath -Path $Path) -eq $true) {
+        return [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($Path))
+    }
 }
 
 Function Get-OZOHostname {
@@ -89,12 +89,11 @@ Function Set-OZOBase64ToFile {
     )
     # Split Directory from Path
     [String] $Directory = (Split-Path -Path $Path -Parent)
-    # Split path into Directory and FileName
     # Ensure the Directory exists and is writable
     If ((Test-OZOPath -Path $Directory -Writable) -eq $true) {
+        # Path
+        [System.IO.File]::WriteAllBytes($Path,[Convert]::FromBase64String($Base64))
     }
-    [System.IO.File]::WriteAllBytes($Path,[Convert]::FromBase64String($Base64))
-
 }
 
 Function Test-OZOPath {
@@ -103,47 +102,47 @@ Function Test-OZOPath {
         [Parameter(Mandatory=$false,HelpMessage="Test if Path is writable")][Switch]$Writable
     )
     # Booleans for readable and writable
-    [Boolean] $Readable = $false
-    [Boolean] $Writable = $false
+    [Boolean] $isReadable = $false
+    [Boolean] $isWritable = $false
     # Object to hold path properties
     [System.IO.FileSystemInfo] $Item = $null
     # Try to get the item
     Try {
         $Item = Get-Item -Path $Path -ErrorAction Stop
-        # Success; Determine if path is a Directory
+        # Success; Determine if path is a File
         If ((Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue) -eq $true) {
             # File; if not read only, set readable and writable
-            $Readable = -Not $Item.IsReadOnly
-            $Writable = $Item.IsReadOnly
+            $isReadable = -Not $Item.IsReadOnly
+            $isWritable = $Item.IsReadOnly
         } Else {
             # Directory
             [String] $TestPath = (Join-Path -Path $Path -ChildPath (New-Guid).Guid)
             # Set readable
-            $Readable = [Boolean](Get-ChildItem -Path $Path -ErrorAction SilentlyContinue)
+            $isReadable = [Boolean](Get-ChildItem -Path $Path -ErrorAction SilentlyContinue)
             # Try to write a file
             Try {
-                New-Item -ItemType File -Path $TestPath -ErrorAction Stop
+                New-Item -ItemType File -Path $TestPath -ErrorAction Stop | Out-Null
                 # Success; set writable to True and clean up
-                $Writable = $true
+                $isWritable = $true
                 Remove-Item -Path $TestPath -ErrorAction Stop
             } Catch {
                 # Failure; set writable to False
-                $Writable = $false
+                $isWritable = $false
             }
         }
     } Catch {
         # Failure; path does not exist or is not accessible; set readable and writable
-        $Readable = $false
-        $Writable = $false
+        $isReadable = $false
+        $isWritable = $false
     }
     # Determine if Writable was specified
     If ($Writable -eq $true) {
         # return Writable
-        return $Writable
+        return $isWritable
     } Else {
         # return Readable
-        return $Readable
+        return $isReadable
     }
 }
 
-Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZOHostname,Get-OZONumberIsOdd
+Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZOFileToBase64,Get-OZOHostname,Get-OZONumberIsOdd,Set-OZOBase64ToFile,Test-OZOPath
