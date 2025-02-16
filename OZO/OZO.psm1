@@ -10,15 +10,33 @@ Function Get-OZO64BitPowerShell {
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#get-ozo64bitpowershell
     #>
-    return [Environment]::Is64BitProcess
+    return [System.Environment]::Is64BitProcess
 }
 
 Function Get-OZOFileToBase64 {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Returns a Base-64 string representing a valid file, or "File not found" if the file does not exist or cannot be read.
+        .PARAMETER Path
+        The path to the file to convert to a base-64 string.
+        .EXAMPLE
+        Get-OZOFileToBase64 -Path .\README.md
+        IyBPWk8gUG93ZXJTaGVsbCBNb2R1bGUgSW5zdGFsbGF... <snip>
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#get-ozofiletobase64
+    #>
     param(
-        [Parameter(Mandatory=$true,HelpMessage="The path to test",ValueFromPipeline=$true)][String]$Path
+        [Parameter(Mandatory=$true,HelpMessage="The path to the file to convert to a base-64 string",ValueFromPipeline=$true)][String]$Path
     )
+    # Determine if Path is readable
     If ((Test-OZOPath -Path $Path) -eq $true) {
-        return [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes($Path))
+        # Path is readable; convert file to base-64 string
+        return [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes((Resolve-Path -Path $Path)))
+    } Else {
+        # Path is not readable; report
+        return "File not found"
     }
 }
 
@@ -83,8 +101,23 @@ Function Get-OZONumberIsOdd {
 }
 
 Function Set-OZOBase64ToFile {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Writes a base-64 string to disk as a file. Returns TRUE on success and FALSE on failure.
+        .PARAMETER Base64
+        The base-64 string to convert.
+        .PARAMETER Path
+        The output file path. If the file exists, it will be overwritten.
+        .EXAMPLE
+        Set-OZOBase64ToFile -Base64 "IyBPWk8gUG93ZXJTaGVsbCBNb2R1bGUgSW5zdGFsbGF..." -Path .\README.md
+        True
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#set-ozobase64tofile
+    #>
     param(
-        [Parameter(Mandatory=$true,HelpMessage="The Base64 string",ValueFromPipeline=$true)][String]$Base64,
+        [Parameter(Mandatory=$true,HelpMessage="The base-64 string",ValueFromPipeline=$true)][String]$Base64,
         [Parameter(Mandatory=$true,HelpMessage="The output file path")][String]$Path
     )
     # Split Directory from Path
@@ -93,10 +126,33 @@ Function Set-OZOBase64ToFile {
     If ((Test-OZOPath -Path $Directory -Writable) -eq $true) {
         # Path
         [System.IO.File]::WriteAllBytes($Path,[Convert]::FromBase64String($Base64))
+        # Determine if the file exists
+        If ((Test-Path -Path $Path) -eq $true) {
+            # File exists
+            return $true
+        } Else {
+            # File does not exist
+            return $false
+        }
     }
 }
 
 Function Test-OZOPath {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Determines if a path exists and is readable. Optionally tests if the path is writable.
+        .PARAMETER Path
+        The path to test. Returns TRUE if the path exists and is readable and otherwise returns FALSE.
+        .PARAMETER Writable
+        Determines if the path is writable. Returns TRUE if the path is writable and otherwise returns FALSE.
+        .EXAMPLE
+        Test-OZOPath -Path .\README.md
+        True
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md#test-ozopath
+    #>
     param(
         [Parameter(Mandatory=$true,HelpMessage="The path to test",ValueFromPipeline=$true)][String]$Path,
         [Parameter(Mandatory=$false,HelpMessage="Test if Path is writable")][Switch]$Writable
