@@ -203,6 +203,21 @@ Function Get-OZONumberIsOdd {
     return [Boolean]($Number%2)
 }
 
+Function Get-OZOUserInteractive {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Returns TRUE if the PowerShell session is user-interactive and FALSE if not.
+        .EXAMPLE
+        Get-OZOUserInteractive
+        True
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOUserInteractive.md
+    #>
+    return [System.Environment]::UserInteractive
+}
+
 Function New-OZOSecurePassword {
     <#
         .SYNOPSIS
@@ -444,4 +459,4 @@ Function Test-OZOPath {
     }
 }
 
-Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZO8601Date,Get-OZOChildWriteTime,Get-OZOFileToBase64,Get-OZOHostname,Get-OZONumberIsOdd,New-OZOSecurePassword,Send-OZOMail,Set-OZOBase64ToFile,Test-OZOLocalAdministrator,Test-OZOPath
+Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZO8601Date,Get-OZOChildWriteTime,Get-OZOFileToBase64,Get-OZOHostname,Get-OZONumberIsOdd,Get-OZOUserInteractive,New-OZOSecurePassword,Send-OZOMail,Set-OZOBase64ToFile,Test-OZOLocalAdministrator,Test-OZOPath
