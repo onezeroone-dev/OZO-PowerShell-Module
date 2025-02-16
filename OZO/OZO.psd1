@@ -16,9 +16,9 @@
     # Company or vendor of this module
     CompanyName = 'One Zero One'
     # Copyright statement for this module
-    Copyright = 'This module is released under the terms in the GNU General Public License ("GPL") version 2.0'
+    Copyright = 'This module is released under the terms in the GNU General Public License ("GPL") version 2.0.'
     # Description of the functionality provided by this module
-    Description = 'One Zero One custom functions'
+    Description = 'One Zero One custom functions with few (or no) dependencies that do not fit into a more specific module.'
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.1'
     # Name of the Windows PowerShell host required by this module
