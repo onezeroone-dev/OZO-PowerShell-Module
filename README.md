@@ -22,6 +22,7 @@ Import-Module OZO
 - [Get-OZOFileToBase64](Documentation/Get-OZOFileToBase64.md)
 - [Get-OZOHostname](Documentation/Get-OZOHostname.md)
 - [Get-OZONumberIsOdd](Documentation/Get-OZONumberIsOdd.md)
+- [Get-OZOUserInteractive](Documentation/Get-OZOUserInteractive.md)
 - [New-OZOSecurePassword.md](Documentation/New-OZOSecurePassword.md)
 - [Send-OZOMail](Documentation/Send-OZOMail.md)
 - [Set-OZOBase64ToFile](Documentation/Set-OZOBase64tofile.md)

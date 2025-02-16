@@ -6,7 +6,7 @@
     # Script module or binary module file associated with this manifest.
     RootModule = 'OZO.psm1'
     # Version number of this module.
-    ModuleVersion = '1.4.0'
+    ModuleVersion = '1.5.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     # ID used to uniquely identify this module
@@ -16,9 +16,9 @@
     # Company or vendor of this module
     CompanyName = 'One Zero One'
     # Copyright statement for this module
-    Copyright = 'This module is released under the terms in the GNU General Public License ("GPL") version 2.0'
+    Copyright = 'This module is released under the terms in the GNU General Public License ("GPL") version 2.0.'
     # Description of the functionality provided by this module
-    Description = 'One Zero One custom functions'
+    Description = 'One Zero One custom functions with few (or no) dependencies that do not fit into a more specific module.'
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.1'
     # Name of the Windows PowerShell host required by this module
@@ -51,6 +51,7 @@
         "Get-OZOFileToBase64",
         "Get-OZOHostname",
         "Get-OZONumberIsOdd",
+        "Get-OZOUserInteractive",
         "New-OZOSecurePassword",
         "Send-OZOMail",
         "Set-OZOBase64ToFile",
