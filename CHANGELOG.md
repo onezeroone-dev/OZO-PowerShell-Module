@@ -2,6 +2,7 @@
 
 |Date|Version|Comment|
 |----|-------|-------|
+|2025-Feb-15|1.4.0|Added `Get-OZO8601Date`, `Get-OZOChildWriteTime`, `New-OZOSecurePassword`, `Send-OZOMail`, and `Test-OZOLocalAdministrator`.|
 |2025-Feb-15|1.3.0|Added `Get-OZOFileToBase64`, `Set-OZOBase64ToFile`, and `Test-OZOPath`.|
 |2024-Nov-28|1.2.0|Added `Get-OZO64BitPowerShell`.|
 |2024-Nov-12|1.1.0|Added `Get-OZONumberIsOdd`.|
