@@ -40,7 +40,7 @@ Function Get-OZO8601Date {
     #>
     param(
         [Parameter(Mandatory=$false,HelpMessage="Include punctuation and spacing")][Switch]$Pretty,
-        [Parameter(Mandatory=$false,HelpMessage="Include the time")][Swtich]$Time
+        [Parameter(Mandatory=$false,HelpMessage="Include the time")][Switch]$Time
     )
     # Get the datetime object for the current date and time
     [DateTime]$dateTime = (Get-Date)
