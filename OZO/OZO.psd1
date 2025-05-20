@@ -6,7 +6,7 @@
     # Script module or binary module file associated with this manifest.
     RootModule = 'OZO.psm1'
     # Version number of this module.
-    ModuleVersion = '1.5.1'
+    ModuleVersion = '1.6.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     # ID used to uniquely identify this module
@@ -46,17 +46,13 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
         "Get-OZO64BitPowerShell",
-        "Get-OZO8601Date"
-        "Get-OZOChildWriteTime",
-        "Get-OZOFileToBase64",
+        "Get-OZO8601Date",
         "Get-OZOHostname",
         "Get-OZONumberIsOdd",
         "Get-OZOUserInteractive",
         "New-OZOSecurePassword",
         "Send-OZOMail",
-        "Set-OZOBase64ToFile",
-        "Test-OZOLocalAdministrator",
-        "Test-OZOPath"
+        "Test-OZOLocalAdministrator"
     )
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @()

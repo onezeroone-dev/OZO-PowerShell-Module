@@ -38,7 +38,7 @@ Function Get-OZO8601Date {
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZO8601Date.md
     #>
-    param(
+    [CmdLetBinding()] Param(
         [Parameter(Mandatory=$false,HelpMessage="Include punctuation and spacing")][Switch]$Pretty,
         [Parameter(Mandatory=$false,HelpMessage="Include the time")][Switch]$Time
     )
@@ -57,89 +57,6 @@ Function Get-OZO8601Date {
     } Else {
         # Neither Pretty or Time were specified
         return $dateTime.ToString("yyyyMMdd")
-    }
-}
-
-Function Get-OZOChildWriteTime {
-    <#
-        .SYNOPSIS
-        See description.
-        .DESCRIPTION
-        Returns the newest or oldest write time for all files within a given path. Returns the newest write time when executed with no parameters.
-        .PARAMETER Oldest
-        Return the oldest date time.
-        .PARAMETER Path
-        The path to inspect. Defaults to the current directory. If Path is invalid or inaccessible, the script returns a datetime object representing 1970-01-01 00:00:00.
-        .EXAMPLE
-        Get-OZOChildWriteTime -Path (Join-Path -Path $Env:USERPROFILE -ChildPath "Git")
-        Saturday, February 15, 2025 17:44:45
-        .EXAMPLE
-        Get-OZOChildWriteTime -Path (Join-Path -Path $Env:USERPROFILE -ChildPath "Git") -Oldest
-        Friday, February 9, 2024 18:03:56
-        .LINK
-        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOChildWriteTime.md
-    #>
-    param(
-        [Parameter(Mandatory=$false,HelpMessage="Include punctuation and spacing")][Switch]$Oldest,
-        [Parameter(Mandatory=$false,HelpMessage="The path to inspect")][String]$Path = (Get-Location)
-        
-    )
-    # Get datetime objects
-    [DateTime] $newestChildWriteTime = (Get-Date -Year 1970 -Month 01 -Day 01 -Hour 00 -Minute 00 -Second 00)
-    [DateTime] $oldestChildWriteTime = (Get-Date)
-    # Determine if the path is valid
-    If ((Test-OZOPath -Path $Path) -eq $true) {
-        # Iterate through the children of the path
-        ForEach ($childItem in (Get-ChildItem -Recurse -Path $Path)) {
-            # Determine if the write time is newer than the current newestChildWriteTime
-            If ($childItem.LastWriteTime -gt $newestChildWriteTime) {
-                # Write time is newer; update newestChildWriteTime
-                $newestChildWriteTime = $childItem.LastWriteTime
-            }
-            # Determine if the write time is older than the current oldestChildWriteTime
-            If ($childItem.LastWriteTime -lt $oldestChildWriteTIme) {
-                # Write time is older; update oldestChildWriteTime
-                $oldestChildWriteTime = $childItem.LastWriteTime
-            }
-        }
-        # Determine if Oldest was specified
-        If ($Oldest -eq $true) {
-            # Oldest was specified; return with oldestChildWriteTime
-            return $oldestChildWriteTime
-        } Else {
-            # Oldest was not specified; return with newestChildWriteTime
-            return $newestChildWriteTime
-        }
-    } Else {
-        # Path is invalid; return datetime object representing 1970-01-01 00:00:00
-        return $newestChildWriteTime
-    }
-}
-
-Function Get-OZOFileToBase64 {
-    <#
-        .SYNOPSIS
-        See description.
-        .DESCRIPTION
-        Returns a Base-64 string representing a valid file, or "File not found" if the file does not exist or cannot be read.
-        .PARAMETER Path
-        The path to the file to convert to a base-64 string.
-        .EXAMPLE
-        Get-OZOFileToBase64 -Path .\README.md
-        IyBPWk8gUG93ZXJTaGVsbCBNb2R1bGUgSW5zdGFsbGF... <snip>
-        .LINK
-        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOFileToBase64.md
-    #>
-    param(
-        [Parameter(Mandatory=$true,HelpMessage="The path to the file to convert to a base-64 string",ValueFromPipeline=$true)][String]$Path
-    )
-    # Determine if Path is readable
-    If ((Test-OZOPath -Path $Path) -eq $true) {
-        # Path is readable; convert file to base-64 string
-        return [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes((Resolve-Path -Path $Path)))
-    } Else {
-        # Path is not readable; report
-        return "File not found"
     }
 }
 
@@ -163,7 +80,7 @@ Function Get-OZOHostname {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documenation/Get-OZOHostname.md
     #>
     # Parameters
-    param (
+    [CmdLetBinding()] Param (
         [Parameter(Mandatory=$false,HelpMessage="The fully qualified domain name",ValueFromPipeline=$true)][String]$FQDN
     )
     # Determine if FQDN is null or empty
@@ -196,7 +113,7 @@ Function Get-OZONumberIsOdd {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZONumberIsOdd.md
     #>
     # Parameters
-    param (
+    [CmdLetBinding()] Param (
         [Parameter(Mandatory=$true,HelpMessage="The number to evaluate",ValueFromPipeline=$true)][Int32]$Number
     )
     # Return
@@ -238,7 +155,7 @@ Function New-OZOSecurePassword {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/New-OZOSecurePassword.md
 
     #>
-    param(
+    [CmdLetBinding()] Param(
         [Parameter(Mandatory=$false,HelpMessage="The number of characters in the string")][Int16]$CharacterCount = 16,
         [Parameter(Mandatory=$false,HelpMessage="The number of special characters")][Int16]$SpecialsCount = 2
     )
@@ -280,7 +197,7 @@ Function Send-OZOMail {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Send-OZOMail.md
 
     #>
-    param(
+    [CmdLetBinding()] Param(
         [Parameter(Mandatory=$true,HelpMessage="A list of message recipients")][Array]$To,
         [Parameter(Mandatory=$false,HelpMessage="A list of additional recipients")][Array]$Cc = $null,
         [Parameter(Mandatory=$false,HelpMessage="A list of additional [hidden] recipients")][Array]$Bcc = $null,
@@ -343,43 +260,6 @@ Function Send-OZOMail {
     return $Return
 }
 
-Function Set-OZOBase64ToFile {
-    <#
-        .SYNOPSIS
-        See description.
-        .DESCRIPTION
-        Writes a base-64 string to disk as a file. Returns TRUE on success and FALSE on failure.
-        .PARAMETER Base64
-        The base-64 string to convert.
-        .PARAMETER Path
-        The output file path. If the file exists, it will be overwritten.
-        .EXAMPLE
-        Set-OZOBase64ToFile -Base64 "IyBPWk8gUG93ZXJTaGVsbCBNb2R1bGUgSW5zdGFsbGF..." -Path .\README.md
-        True
-        .LINK
-        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Set-OZOBase64ToFile.md
-    #>
-    param(
-        [Parameter(Mandatory=$true,HelpMessage="The base-64 string",ValueFromPipeline=$true)][String]$Base64,
-        [Parameter(Mandatory=$true,HelpMessage="The output file path")][String]$Path
-    )
-    # Split Directory from Path
-    [String] $Directory = (Split-Path -Path $Path -Parent)
-    # Ensure the Directory exists and is writable
-    If ((Test-OZOPath -Path $Directory -Writable) -eq $true) {
-        # Path
-        [System.IO.File]::WriteAllBytes($Path,[Convert]::FromBase64String($Base64))
-        # Determine if the file exists
-        If ((Test-Path -Path $Path) -eq $true) {
-            # File exists
-            return $true
-        } Else {
-            # File does not exist
-            return $false
-        }
-    }
-}
-
 Function Test-OZOLocalAdministrator {
     <#
         .SYNOPSIS
@@ -395,68 +275,4 @@ Function Test-OZOLocalAdministrator {
     return (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-Function Test-OZOPath {
-    <#
-        .SYNOPSIS
-        See description.
-        .DESCRIPTION
-        Determines if a path exists and is readable. Optionally tests if the path is writable.
-        .PARAMETER Path
-        The path to test. Returns TRUE if the path exists and is readable and otherwise returns FALSE.
-        .PARAMETER Writable
-        Determines if the path is writable. Returns TRUE if the path is writable and otherwise returns FALSE.
-        .EXAMPLE
-        Test-OZOPath -Path .\README.md
-        True
-        .LINK
-        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Test-OZOPath.md
-    #>
-    param(
-        [Parameter(Mandatory=$true,HelpMessage="The path to test",ValueFromPipeline=$true)][String]$Path,
-        [Parameter(Mandatory=$false,HelpMessage="Test if Path is writable")][Switch]$Writable
-    )
-    # Booleans for readable and writable
-    [Boolean] $isReadable = $false
-    [Boolean] $isWritable = $false
-    # Object to hold path properties
-    [System.IO.FileSystemInfo] $Item = $null
-    # Try to get the item
-    Try {
-        $Item = Get-Item -Path $Path -ErrorAction Stop
-        # Success; Determine if path is a File
-        If ((Test-Path -Path $Path -PathType Leaf -ErrorAction SilentlyContinue) -eq $true) {
-            # File; if not read only, set readable and writable
-            $isReadable = -Not $Item.IsReadOnly
-            $isWritable = $Item.IsReadOnly
-        } Else {
-            # Directory
-            [String] $TestPath = (Join-Path -Path $Path -ChildPath (New-Guid).Guid)
-            # Set readable
-            $isReadable = [Boolean](Get-ChildItem -Path $Path -ErrorAction SilentlyContinue)
-            # Try to write a file
-            Try {
-                New-Item -ItemType File -Path $TestPath -ErrorAction Stop | Out-Null
-                # Success; set writable to True and clean up
-                $isWritable = $true
-                Remove-Item -Path $TestPath -ErrorAction Stop
-            } Catch {
-                # Failure; set writable to False
-                $isWritable = $false
-            }
-        }
-    } Catch {
-        # Failure; path does not exist or is not accessible; set readable and writable
-        $isReadable = $false
-        $isWritable = $false
-    }
-    # Determine if Writable was specified
-    If ($Writable -eq $true) {
-        # return Writable
-        return $isWritable
-    } Else {
-        # return Readable
-        return $isReadable
-    }
-}
-
-Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZO8601Date,Get-OZOChildWriteTime,Get-OZOFileToBase64,Get-OZOHostname,Get-OZONumberIsOdd,Get-OZOUserInteractive,New-OZOSecurePassword,Send-OZOMail,Set-OZOBase64ToFile,Test-OZOLocalAdministrator,Test-OZOPath
+Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZO8601Date,Get-OZOHostname,Get-OZONumberIsOdd,Get-OZOUserInteractive,New-OZOSecurePassword,Send-OZOMail,Test-OZOLocalAdministrator
