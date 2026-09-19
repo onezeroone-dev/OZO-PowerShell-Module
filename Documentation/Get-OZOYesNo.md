@@ -15,6 +15,7 @@ None.
 ## Examples
 `````powershell
 Get-OZOYesNo
+(Y/N): y
 y
 `````
 

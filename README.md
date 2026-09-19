@@ -21,6 +21,7 @@ Import-Module OZO
 - [Get-OZOHostname](Documentation/Get-OZOHostname.md)
 - [Get-OZONumberIsOdd](Documentation/Get-OZONumberIsOdd.md)
 - [Get-OZOUserInteractive](Documentation/Get-OZOUserInteractive.md)
+- [Get-OZOYesNo](Documentation/Get-OZOYesNo.md)
 - [New-OZOSecurePassword.md](Documentation/New-OZOSecurePassword.md)
 - [Send-OZOMail](Documentation/Send-OZOMail.md)
 - [Test-OZOLocalAdministrator](Documentation/Test-OZOLocalAdministrator.md)

@@ -149,6 +149,7 @@ Function Get-OZOYesNo {
         Prompts the user for a Yes or No response and returns the lowercase of the first letter of their response.
         .EXAMPLE
         Get-OZOYesNo
+        (Y/N): y
         y
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOYesNo.md
@@ -157,10 +158,10 @@ Function Get-OZOYesNo {
     [String] $Response = $null
     # Loop until a valid response is received
     Do {
-        $Response = (Read-Host "(Y/N)")[0].ToLower()
-    } Until ($Response -eq "y" -Or $Response -eq "n")
+        $Response = (Read-Host "(Y/N)")[0]
+    } Until ($Response.ToLower() -eq "y" -Or $Response.ToLower() -eq "n")
     # Return
-    return $Response
+    return $Response.ToLower()
 }
 
 Function New-OZOSecurePassword {
