@@ -2,7 +2,7 @@
 This function is part of the [OZO PowerShell Module](https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md).
 
 ## Description
-Evaluates an integer and returns True if the number is odd or False if the number is even.
+Returns _True_ if the number odd and otherwise _False_.
 
 ## Syntax
 ```

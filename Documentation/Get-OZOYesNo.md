@@ -1,22 +1,22 @@
-# Get-OZO64BitPowerShell
+# Get-OZOYesNo
 This function is part of the [OZO PowerShell Module](https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md).
 
 ## Description
-Returns _True_ if the PowerShell environment is 64-bit and otherwise _False_.
+Prompts the user for a Yes or No response and returns the lowercase of the first letter of their response.
 
 ## Syntax
 ```
-Get-OZO64BitPowerShell
+Get-OZOYesNo
 ```
 
 ## Parameters
 None.
 
 ## Examples
-```powershell
-Get-OZO64BitPowerShell
-True
-```
+`````powershell
+Get-OZOYesNo
+y
+`````
 
 ## Outputs
-`System.Boolean`
+`System.String`
