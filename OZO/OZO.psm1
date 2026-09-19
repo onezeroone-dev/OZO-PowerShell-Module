@@ -3,13 +3,14 @@ Function Get-OZO64BitPowerShell {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Returns True if the PowerShell environment is 64-bit and False if not.
+        Returns True if the PowerShell environment is 64-bit and otherwise False.
         .EXAMPLE
         Get-OZO64BitPowerShell
         True
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZO64BitPowerShell.md
     #>
+    # Return
     return [System.Environment]::Is64BitProcess
 }
 
@@ -38,6 +39,7 @@ Function Get-OZO8601Date {
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZO8601Date.md
     #>
+    # Parameters
     [CmdLetBinding()] Param(
         [Parameter(Mandatory=$false,HelpMessage="Include punctuation and spacing")][Switch]$Pretty,
         [Parameter(Mandatory=$false,HelpMessage="Include the time")][Switch]$Time
@@ -48,12 +50,15 @@ Function Get-OZO8601Date {
     If ($Pretty -eq $true -And $Time -eq $true) {
         # Pretty and Time were specified
         return $dateTime.ToString("yyyy-MM-dd HH:mm:ss")
+    # Determine if only Pretty was specified
     } ElseIf ($Pretty -eq $true -And $Time -eq $false) {
         # Only Pretty was specified
         return $dateTime.ToString("yyyy-MM-dd")
+    # Determine if only Time was specified
     } ElseIf ($Pretty -eq $false -And $Time -eq $true) {
         # Only Time was specified
         return $dateTime.ToString("yyyyMMddHHmmss")
+    # Determine if neither Pretty nor Time were specified
     } Else {
         # Neither Pretty or Time were specified
         return $dateTime.ToString("yyyyMMdd")
@@ -98,7 +103,7 @@ Function Get-OZONumberIsOdd {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Evaluates an integer and returns True if the number is odd or False if the number is even.
+        Returns True if the number is odd and otherwise False.
         .PARAMETER Number
         The number to evaluate. Accepts pipeline input.
         .EXAMPLE
@@ -125,14 +130,38 @@ Function Get-OZOUserInteractive {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Returns TRUE if the PowerShell session is user-interactive and FALSE if not.
+        Returns True if the PowerShell session is user-interactive and otherwise False.
         .EXAMPLE
         Get-OZOUserInteractive
         True
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOUserInteractive.md
     #>
+    # Return
     return [System.Environment]::UserInteractive
+}
+
+Function Get-OZOYesNo {
+    <#
+        .SYNOPSIS
+        See description.
+        .DESCRIPTION
+        Prompts the user for a Yes or No response and returns the lowercase of the first letter of their response.
+        .EXAMPLE
+        Get-OZOYesNo
+        (Y/N): y
+        y
+        .LINK
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOYesNo.md
+    #>
+    # Variables
+    [String] $Response = $null
+    # Loop until a valid response is received
+    Do {
+        $Response = (Read-Host "(Y/N)")[0]
+    } Until ($Response.ToLower() -eq "y" -Or $Response.ToLower() -eq "n")
+    # Return
+    return $Response.ToLower()
 }
 
 Function New-OZOSecurePassword {
@@ -155,6 +184,7 @@ Function New-OZOSecurePassword {
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/New-OZOSecurePassword.md
 
     #>
+    # Parameters
     [CmdLetBinding()] Param(
         [Parameter(Mandatory=$false,HelpMessage="The number of characters in the string")][Int16]$CharacterCount = 16,
         [Parameter(Mandatory=$false,HelpMessage="The number of special characters")][Int16]$SpecialsCount = 2
@@ -162,8 +192,8 @@ Function New-OZOSecurePassword {
     # Load the required assembly
     [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
     # Determine if SpecialsCount is greater than or equal to CharacterCount; and if yes, set it to 2
-    If ($SpecialsCount -ge $CharacterCount) { $SpecialsCount = 2}
-    # return the secure string
+    If ($SpecialsCount -ge $CharacterCount) { $SpecialsCount = 2 }
+    # Return
     return [System.Web.Security.Membership]::GeneratePassword($CharacterCount,$SpecialsCount)
 }
 
@@ -195,7 +225,6 @@ Function Send-OZOMail {
         Send-OZOMail -To "OZO Info <info@onezeroone.dev>" -From "OZO Noreply <noreply@onezeroone.dev" -Subject "Test" -Body "This is a test." -MailServer "smtp.onezerone.dev"
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Send-OZOMail.md
-
     #>
     [CmdLetBinding()] Param(
         [Parameter(Mandatory=$true,HelpMessage="A list of message recipients")][Array]$To,
@@ -207,10 +236,11 @@ Function Send-OZOMail {
         [Parameter(Mandatory=$false,HelpMessage="A list of files to attach")][Array]$Attachments = $null,
         [Parameter(Mandatory=$true,HelpMessage="The SMTP relay server to use")][String]$MailServer
     )
-    # Variables
-    [Boolean] $Return   = $true
-    [Boolean] $Send     = $true
-    [Int16]   $MailPort = 25
+    # Variables: Boleans
+    [Boolean] $Return = $true
+    [Boolean] $Send   = $true
+    # Variables: Int16s
+    [Int16] $MailPort = 25
     # Determine that we can reach the SMTP server on port 25
     If ((Test-NetConnection -ComputerName $MailServer -Port $MailPort) -eq $true) {
         # Reached SMTP server on port 25
@@ -232,9 +262,12 @@ Function Send-OZOMail {
         If ($null -ne $Attachments) {
             # Iterate through the attachments
             ForEach ($Path in $Attachments) {
-                If ((Test-Path -Path (Resolve-Path -Path $Path)) -eq $true) {
+                # Determine if the attachment path exists
+                If ([Boolean](Test-Path -Path (Resolve-Path -Path $Path -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) -eq $true) {
+                    # Attachment path exists
                     $ozoMail.Attachments.Add((New-Object Net.Mail.Attachment((Resolve-Path -Path $Path))))
                 } Else {
+                    # Attachment path does not exist
                     $Send = $false
                 }
             }
@@ -265,14 +298,24 @@ Function Test-OZOLocalAdministrator {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Returns TRUE if the current user is a local administrator and FALSE if not.
+        Returns True if the current user is a local administrator and otherwise False.
         .EXAMPLE
         Test-OZOLocalAdministrator
         True
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Test-OZOLocalAdministrator.md
     #>
+    # Return
     return (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-Export-ModuleMember -Function Get-OZO64BitPowerShell,Get-OZO8601Date,Get-OZOHostname,Get-OZONumberIsOdd,Get-OZOUserInteractive,New-OZOSecurePassword,Send-OZOMail,Test-OZOLocalAdministrator
+Export-ModuleMember -Function `
+    Get-OZO64BitPowerShell,
+    Get-OZO8601Date,
+    Get-OZOHostname,
+    Get-OZONumberIsOdd,
+    Get-OZOUserInteractive,
+    Get-OZOYesNo,
+    New-OZOSecurePassword,
+    Send-OZOMail,
+    Test-OZOLocalAdministrator

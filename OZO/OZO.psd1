@@ -6,7 +6,7 @@
     # Script module or binary module file associated with this manifest.
     RootModule = 'OZO.psm1'
     # Version number of this module.
-    ModuleVersion = '1.6.0'
+    ModuleVersion = '1.7.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     # ID used to uniquely identify this module
@@ -50,6 +50,7 @@
         "Get-OZOHostname",
         "Get-OZONumberIsOdd",
         "Get-OZOUserInteractive",
+        "Get-OZOYesNo",
         "New-OZOSecurePassword",
         "Send-OZOMail",
         "Test-OZOLocalAdministrator"
