@@ -19,7 +19,7 @@ Function Get-OZO8601Date {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Returns a formatted ISO 8601 date string.
+        Returns the current local date, optionally including local time. Time values do not include a time-zone offset.
         .PARAMETER Pretty
         Include punctuation and spacing for a more human-readable date string.
         .PARAMETER Time
@@ -82,19 +82,22 @@ Function Get-OZOHostname {
         .OUTPUTS
         System.String
         .LINK
-        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documenation/Get-OZOHostname.md
+        https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Get-OZOHostname.md
     #>
     # Parameters
     [CmdLetBinding()] Param (
         [Parameter(Mandatory=$false,HelpMessage="The fully qualified domain name",ValueFromPipeline=$true)][String]$FQDN
     )
-    # Determine if FQDN is null or empty
-    If ([String]::IsNullOrEmpty($FQDN)) {
-        # FQDN is null or empty; return the local hostname
-        return $Env:COMPUTERNAME
-    } Else {
-        # FQDN is not null or empty; parse and return the hostname
-        return ($FQDN -Split "\.",2)[0]
+    # Process each FQDN supplied through the pipeline
+    Process {
+        # Determine if FQDN is null or empty
+        If ([String]::IsNullOrEmpty($FQDN)) {
+            # FQDN is null or empty; return the local hostname
+            $Env:COMPUTERNAME
+        } Else {
+            # FQDN is not null or empty; parse and return the hostname
+            ($FQDN -Split "\.",2)[0]
+        }
     }
 }
 
@@ -121,8 +124,10 @@ Function Get-OZONumberIsOdd {
     [CmdLetBinding()] Param (
         [Parameter(Mandatory=$true,HelpMessage="The number to evaluate",ValueFromPipeline=$true)][Int32]$Number
     )
-    # Return
-    return [Boolean]($Number%2)
+    # Return whether each pipeline number is odd
+    Process {
+        [Boolean]($Number%2)
+    }
 }
 
 Function Get-OZOUserInteractive {
@@ -146,7 +151,7 @@ Function Get-OZOYesNo {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Prompts the user for a Yes or No response and returns the lowercase of the first letter of their response.
+        Prompts the user for a Yes or No response, ignores empty input, and returns the lowercase first letter.
         .EXAMPLE
         Get-OZOYesNo
         (Y/N): y
@@ -158,10 +163,38 @@ Function Get-OZOYesNo {
     [String] $Response = $null
     # Loop until a valid response is received
     Do {
-        $Response = (Read-Host "(Y/N)")[0]
-    } Until ($Response.ToLower() -eq "y" -Or $Response.ToLower() -eq "n")
-    # Return
-    return $Response.ToLower()
+        $InputResponse = Read-Host "(Y/N)"
+        # Ignore empty or whitespace-only responses
+        If ([String]::IsNullOrWhiteSpace($InputResponse)) {
+            $Response = ""
+        } Else {
+            # Normalize the first non-whitespace character
+            $Response = $InputResponse.Trim().Substring(0,1).ToLowerInvariant()
+        }
+    } Until ($Response -eq "y" -Or $Response -eq "n")
+    # Return the validated response
+    return $Response
+}
+
+# Return a cryptographically random index without modulo bias
+Function Get-OZOSecureRandomIndex {
+    [CmdLetBinding()] Param(
+        [Parameter(Mandatory=$true)][ValidateRange(1,32767)][Int32]$UpperBound,
+        [Parameter(Mandatory=$true)][System.Security.Cryptography.RandomNumberGenerator]$Generator
+    )
+    # Allocate bytes for an unsigned 32-bit random value
+    [Byte[]]$Bytes = New-Object Byte[] 4
+    # Find the largest divisible range to avoid modulo bias
+    [UInt64]$Range = 4294967296
+    [UInt64]$Bound = $UpperBound
+    [UInt64]$Limit = $Range - ($Range % $Bound)
+    # Reject values outside the divisible range
+    Do {
+        $Generator.GetBytes($Bytes)
+        [UInt64]$Value = [BitConverter]::ToUInt32($Bytes,0)
+    } While ($Value -ge $Limit)
+    # Return an index within the requested upper bound
+    return [Int32]($Value % $Bound)
 }
 
 Function New-OZOSecurePassword {
@@ -169,32 +202,61 @@ Function New-OZOSecurePassword {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Returns a secure string (password).
+        Returns a randomly generated password as a plain-text string.
         .PARAMETER CharacterCount
-        The total number of characters in the string. Defaults to 16.
+        The total number of characters in the string. Defaults to 16. Must be between 2 and 32767.
         .PARAMETER SpecialsCount
-        The number of special characters. If you do not specify this parameter, or if you specify a value that is higher than the total number of characters, the secure string will contain 2 special characters.
+        The number of special characters. Defaults to 2 and must be between 0 and CharacterCount.
         .EXAMPLE
-        New-OZOSecurePassword
-        z?p/1zD-d(:Xd[R|
+        (New-OZOSecurePassword).Length
+        16
         .EXAMPLE
-        New-OZOSecurePassword -CharacterCount 64 -SpecialsCount 16
-        t.kgL@yoBv+f68oYEGVRTpBTZ{>.:qQ=RABH/F%X1g*U6]rX|2|KWErZ@b#m{i$o
+        (New-OZOSecurePassword -CharacterCount 64 -SpecialsCount 16).Length
+        64
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/New-OZOSecurePassword.md
 
     #>
-    # Parameters
     [CmdLetBinding()] Param(
-        [Parameter(Mandatory=$false,HelpMessage="The number of characters in the string")][Int16]$CharacterCount = 16,
-        [Parameter(Mandatory=$false,HelpMessage="The number of special characters")][Int16]$SpecialsCount = 2
+        [Parameter(Mandatory=$false,HelpMessage="The number of characters in the password")][ValidateRange(2,32767)][Int16]$CharacterCount = 16,
+        [Parameter(Mandatory=$false,HelpMessage="The number of special characters")][ValidateRange(0,32767)][Int16]$SpecialsCount = 2
     )
-    # Load the required assembly
-    [Reflection.Assembly]::LoadWithPartialName("System.Web") | Out-Null
-    # Determine if SpecialsCount is greater than or equal to CharacterCount; and if yes, set it to 2
-    If ($SpecialsCount -ge $CharacterCount) { $SpecialsCount = 2 }
-    # Return
-    return [System.Web.Security.Membership]::GeneratePassword($CharacterCount,$SpecialsCount)
+    # Ensure the requested special-character count fits the password length
+    If ($SpecialsCount -gt $CharacterCount) {
+        throw [System.ArgumentOutOfRangeException]::new("SpecialsCount","SpecialsCount cannot exceed CharacterCount.")
+    }
+    # Define the characters allowed in each part of the password
+    [Char[]]$AlphanumericCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray()
+    [Char[]]$SpecialCharacters = "!@#$%^&*()-_=+[]{};:,.?/".ToCharArray()
+    # Allocate the password buffer and calculate the alphanumeric portion
+    [Char[]]$PasswordCharacters = New-Object Char[] $CharacterCount
+    [Int32]$AlphanumericCount = $CharacterCount - $SpecialsCount
+    # Create a cryptographically secure random-number generator
+    $Generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    Try {
+        # Fill the buffer with the requested number of alphanumeric characters
+        For ($Index = 0; $Index -lt $AlphanumericCount; $Index++) {
+            $RandomIndex = Get-OZOSecureRandomIndex -UpperBound $AlphanumericCharacters.Length -Generator $Generator
+            $PasswordCharacters[$Index] = $AlphanumericCharacters[$RandomIndex]
+        }
+        # Fill the remaining positions with special characters
+        For ($Index = $AlphanumericCount; $Index -lt $CharacterCount; $Index++) {
+            $RandomIndex = Get-OZOSecureRandomIndex -UpperBound $SpecialCharacters.Length -Generator $Generator
+            $PasswordCharacters[$Index] = $SpecialCharacters[$RandomIndex]
+        }
+        # Shuffle all characters so special characters are not grouped at the end
+        For ($Index = $CharacterCount - 1; $Index -gt 0; $Index--) {
+            $RandomIndex = Get-OZOSecureRandomIndex -UpperBound ($Index + 1) -Generator $Generator
+            $Character = $PasswordCharacters[$Index]
+            $PasswordCharacters[$Index] = $PasswordCharacters[$RandomIndex]
+            $PasswordCharacters[$RandomIndex] = $Character
+        }
+        # Return the generated password
+        return (-join $PasswordCharacters)
+    } Finally {
+        # Dispose of the random-number generator
+        $Generator.Dispose()
+    }
 }
 
 Function Send-OZOMail {
@@ -202,7 +264,7 @@ Function Send-OZOMail {
         .SYNOPSIS
         See description.
         .DESCRIPTION
-        Sends an email message using an anonymous, unencrypted SMTP relay. Returns TRUE on success and FALSE on failure.
+        Sends an email message using an anonymous, unencrypted SMTP relay on port 25. Returns True on success. Returns False and writes an error if the server is unreachable, an attachment path is missing, or SMTP sending fails. Invalid addresses and other setup errors are reported as terminating errors.
         .PARAMETER To
         A comma-separated list of message recipients. You must supply at least one recipient. You may supply a simple email address e.g., "noreply@onezeroone.dev" or you can use the "One Zero One Noreply <noreply@onezeroone.dev>" syntax for "prettier" headers.
         .PARAMETER Cc
@@ -216,13 +278,13 @@ Function Send-OZOMail {
         .PARAMETER Body
         The message body.
         .PARAMETER Attachments
-        A comma-separated list of file paths to attach. If a file is not found or cannot be read, the message will not be sent.
+        A list of file paths to attach. A missing file causes the function to return False and write an error; inaccessible files can produce a terminating error.
         .PARAMETER MailServer
         The SMTP relay server to use.
         .OUTPUTS
         System.Boolean
         .EXAMPLE
-        Send-OZOMail -To "OZO Info <info@onezeroone.dev>" -From "OZO Noreply <noreply@onezeroone.dev" -Subject "Test" -Body "This is a test." -MailServer "smtp.onezerone.dev"
+        Send-OZOMail -To "OZO Info <info@onezeroone.dev>" -From "OZO Noreply <noreply@onezeroone.dev>" -Subject "Test" -Body "This is a test." -MailServer "smtp.onezeroone.dev"
         .LINK
         https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/Documentation/Send-OZOMail.md
     #>
@@ -236,61 +298,64 @@ Function Send-OZOMail {
         [Parameter(Mandatory=$false,HelpMessage="A list of files to attach")][Array]$Attachments = $null,
         [Parameter(Mandatory=$true,HelpMessage="The SMTP relay server to use")][String]$MailServer
     )
-    # Variables: Boleans
-    [Boolean] $Return = $true
-    [Boolean] $Send   = $true
-    # Variables: Int16s
+    # Initialize disposable objects for cleanup
+    $ozoMail = $null
+    $ozoSMTP = $null
+    # Use the standard SMTP port
     [Int16] $MailPort = 25
-    # Determine that we can reach the SMTP server on port 25
-    If ((Test-NetConnection -ComputerName $MailServer -Port $MailPort) -eq $true) {
-        # Reached SMTP server on port 25
+    # Determine whether the SMTP server is reachable
+    $Connection = Test-NetConnection -ComputerName $MailServer -Port $MailPort
+    If (-not $Connection.TcpTestSucceeded) {
+        # Unable to reach the SMTP server
+        Write-Error -Message "Unable to connect to SMTP server '$MailServer' on port $MailPort." -Category ConnectionError -TargetObject $MailServer
+        return $false
+    }
+    Try {
         # Construct a mail message object
         $ozoMail = New-Object Net.Mail.MailMessage
         # Add the To recipients
-        ForEach ($Recipient in $To) { $ozoMail.To.Add($Recipient)}
-        # Add the From sender
+        ForEach ($Recipient in $To) { $ozoMail.To.Add($Recipient) }
+        # Add the From sender, subject, and body
         $ozoMail.From = $From
-        # Add the Subject
         $ozoMail.Subject = $Subject
-        # Add the Body
         $ozoMail.Body = $Body
-        # Add the Cc recipients (if any)
-        If ($null -ne $Cc) {ForEach ($Recipient in $Cc) { $ozoMail.CC.Add($Receipient)}}
-        # Add the Bcc recipients (if any)
-        If ($null -ne $Bcc) {ForEach ($Recipient in $Bcc) { $ozoMail.Bcc.Add($Recipient)}}
-        # Add the Attachments (if any)
+        # Add the Cc and Bcc recipients, if supplied
+        If ($null -ne $Cc) { ForEach ($Recipient in $Cc) { $ozoMail.CC.Add($Recipient) } }
+        If ($null -ne $Bcc) { ForEach ($Recipient in $Bcc) { $ozoMail.Bcc.Add($Recipient) } }
+        # Add the attachments, if supplied
         If ($null -ne $Attachments) {
-            # Iterate through the attachments
             ForEach ($Path in $Attachments) {
-                # Determine if the attachment path exists
-                If ([Boolean](Test-Path -Path (Resolve-Path -Path $Path -ErrorAction SilentlyContinue) -ErrorAction SilentlyContinue) -eq $true) {
-                    # Attachment path exists
-                    $ozoMail.Attachments.Add((New-Object Net.Mail.Attachment((Resolve-Path -Path $Path))))
-                } Else {
-                    # Attachment path does not exist
-                    $Send = $false
+                # Verify that each attachment path identifies a file
+                If (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+                    Write-Error -Message "Attachment file '$Path' was not found." -Category ObjectNotFound -TargetObject $Path
+                    return $false
                 }
+                # Resolve the file path and attach the file
+                $ResolvedPath = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).ProviderPath
+                $ozoMail.Attachments.Add((New-Object Net.Mail.Attachment($ResolvedPath)))
             }
         }
-        # Determine if Send is true (all prerequisites satisfied)
-        If ($Send -eq $true) {
-            # Establish an SMTP connection
-            $ozoSMTP = New-Object Net.Mail.SmtpClient($MailServer,$MailPort)
-            # Attempt to send the message
-            Try {
-                $ozoSMTP.Send($ozoMail)
-                # Success
-            } Catch {
-                # Failure
-                $Return = $false
-            }
+        # Establish an SMTP connection
+        $ozoSMTP = New-Object Net.Mail.SmtpClient($MailServer,$MailPort)
+        # Attempt to send the message
+        Try {
+            $ozoSMTP.Send($ozoMail)
+            # Return success
+            return $true
+        } Catch [System.Net.Mail.SmtpException] {
+            # Report SMTP send failures
+            Write-Error -ErrorRecord $_
+            return $false
+        } Catch [System.InvalidOperationException] {
+            # Report invalid SMTP operation failures
+            Write-Error -ErrorRecord $_
+            return $false
         }
-    } Else {
-        # Unable to reach mail server
-        $Return = $false
+    } Finally {
+        # Dispose of the SMTP client and message, including any attachments
+        If ($null -ne $ozoSMTP) { $ozoSMTP.Dispose() }
+        If ($null -ne $ozoMail) { $ozoMail.Dispose() }
     }
-    # Return
-    return $Return
 }
 
 Function Test-OZOLocalAdministrator {
@@ -314,6 +379,7 @@ Export-ModuleMember -Function `
     Get-OZO8601Date,
     Get-OZOHostname,
     Get-OZONumberIsOdd,
+    Get-OZOSecureRandomIndex,
     Get-OZOUserInteractive,
     Get-OZOYesNo,
     New-OZOSecurePassword,

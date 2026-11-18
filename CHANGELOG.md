@@ -2,6 +2,7 @@
 
 |Date|Version|Comment|
 |----|-------|-------|
+|2026-Nov-17|1.8.0|Refactor; fix mail, pipeline, and prompt behavior; improve password generation and documentation with assistance from GitHub Copilot.|
 |2026-Sep-19|1.7.0|Added `Get-OZOYesNo`; and minor documentation updates.|
 |2025-May-19|1.6.0|Moved _files_ functions to OZOFiles PowerShell Module.|
 |2025-Mar-01|1.5.1|Minor bug fix in `Get-OZO8601Date`.|

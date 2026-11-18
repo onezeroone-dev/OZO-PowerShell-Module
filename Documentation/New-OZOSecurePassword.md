@@ -2,7 +2,7 @@
 This function is part of the [OZO PowerShell Module](https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md).
 
 ## Description
-Returns a secure string (password).
+Returns a randomly generated password as a plain-text `System.String`.
 
 ## Syntax
 ```
@@ -14,21 +14,23 @@ New-OZOSecurePassword
 ## Parameters
 |Parameter|Description|
 |---------|-----------|
-|`CharacterCount`|The total number of characters in the string. Defaults to 16.|
-|`SpecialsCount`|The number of special characters. If you do not specify this parameter, or if you specify a value that is higher than the total number of characters, the secure string will contain 2 special characters.|
+|`CharacterCount`|The total number of characters in the password. Defaults to 16. Must be between 2 and 32767.|
+|`SpecialsCount`|The exact number of special characters. Defaults to 2. Must be between 0 and `CharacterCount`; larger values produce an error.|
+
+Passwords are generated using a cryptographically secure random-number generator. Alphanumeric characters are drawn from `A-Z`, `a-z`, and `0-9`; special characters are drawn from `!@#$%^&*()-_=+[]{};:,.?/`.
 
 ## Examples
 
 ### Example 1
 ```powershell
-New-OZOSecurePassword
-z?p/1zD-d(:Xd[R|
+(New-OZOSecurePassword).Length
+16
 ```
 
 ### Example 2
 `````powershell
-New-OZOSecurePassword -CharacterCount 64 -SpecialsCount 16
-t.kgL@yoBv+f68oYEGVRTpBTZ{>.:qQ=RABH/F%X1g*U6]rX|2|KWErZ@b#m{i$o
+(New-OZOSecurePassword -CharacterCount 64 -SpecialsCount 16).Length
+64
 `````
 
 ## Outputs

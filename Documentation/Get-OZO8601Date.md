@@ -2,7 +2,7 @@
 This function is part of the [OZO PowerShell Module](https://github.com/onezeroone-dev/OZO-PowerShell-Module/blob/main/README.md).
 
 ## Description
-Returns a formatted ISO 8601 date string.
+Returns the current local date, optionally including the local time. Output formats are `yyyyMMdd`, `yyyy-MM-dd`, `yyyyMMddHHmmss`, and `yyyy-MM-dd HH:mm:ss`; time values do not include a time-zone offset.
 
 ## Syntax
 ```
@@ -21,7 +21,7 @@ Get-OZO8601Date
 
 ### Example 1
 ```powershell
-Get-OZO8601Date -Pretty
+Get-OZO8601Date
 20250215
 ```
 
